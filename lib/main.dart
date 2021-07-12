@@ -15,12 +15,12 @@ Future<void> main() async {
   await Firebase.initializeApp();
 
   //Calendar things
-  var _clientID = new ClientId(Secret.getId(), "");
-  const _scopes = const [cal.CalendarApi.calendarScope];
-
-  await clientViaUserConsent(_clientID, _scopes, prompt).then((AuthClient client) async {
-    CalendarClient.calendar = cal.CalendarApi(client);
-  });
+  //var _clientID = new ClientId(Secret.getId(), "");
+ // const _scopes = const [cal.CalendarApi.calendarScope];
+ //
+ //  await clientViaUserConsent(_clientID, _scopes, prompt).then((AuthClient client) async {
+ //    CalendarClient.calendar = cal.CalendarApi(client);
+ //  });
 
   runApp(Step());
 }

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:step/services/calendar_services/calendar_client.dart';
@@ -56,6 +57,8 @@ class _CreateClassPageState extends State<CreateClassPage> {
   // Get School UID from
   String schoolUidFromDatabase;
   String teacherNameFromDatabase;
+
+  String class_value='7 A';
 
   Future<void> getSchool() async {
     String schoolUidFromFirestore = await UserHelper.getSchoolUidForTeacher();
@@ -403,52 +406,69 @@ class _CreateClassPageState extends State<CreateClassPage> {
                       style: teacherRichTextStyle,
                       children: theRedStarAboveName,
                     )),
+
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.cyan[600], width: 1.0),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: DropdownButtonFormField(
-                        hint: Text(
-                          '   eg: 1, 2, 3, 4...',
-                          style: TextStyle(
-                            color: Colors.grey.withOpacity(0.6),
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        dropdownColor: Colors.blue[900],
-                        icon: Icon(
-                          Icons.arrow_drop_down_rounded,
-                          color: Colors.white,
-                        ),
-                        iconSize: 40.0,
-                        isExpanded: true,
-                        validator: (value) => value == null ? 'Required' : null,
-                        style: TextStyle(fontSize: 17.0, color: Colors.white, fontFamily: 'LexendDeca'),
-                        value: standard,
-                        onChanged: (changedValue) {
-                          setState(() {
-                            standard = changedValue;
-                          });
-                        },
-                        items: dropdownClass.map((changedItem) {
-                          return DropdownMenuItem(
-                            value: changedItem,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 10.0,
-                                ),
-                                Text(
-                                  changedItem,
-                                  style: commontextstyle,
-                                ),
-                              ],
+                      child:  StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('classes')
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          // Safety check to ensure that snapshot contains data
+                          // without this safety check, StreamBuilder dirty state warnings will be thrown
+                          if (!snapshot.hasData) return Container();
+                          // Set this value for default,
+                          // setDefault will change if an item was selected
+                          // First item from the List will be displayed
+                          return DropdownButtonFormField(
+                            hint: Text(
+                              '   eg: 1, 2, 3, 4...',
+                              style: TextStyle(
+                                color: Colors.grey.withOpacity(0.6),
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                             ),
+                            dropdownColor: Colors.blue[900],
+                            icon: Icon(
+                              Icons.arrow_drop_down_rounded,
+                              color: Colors.white,
+                            ),
+                            iconSize: 40.0,
+                            isExpanded: true,
+                            validator: (value) => value == null ? 'Required' : null,
+                            style: TextStyle(fontSize: 17.0, color: Colors.white, fontFamily: 'LexendDeca'),
+                            value: class_value,
+                            onChanged: (changedValue) {
+                              setState(() {
+                                standard = changedValue;
+                                class_value = changedValue;
+                              });
+                            },
+                            items: snapshot.data.docs.map((value) {
+                              return DropdownMenuItem(
+                                value: value.get('class_name'),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                      height: 10.0,
+                                    ),
+                                    Text(
+                                     value.get('class_name'),
+                                      style: commontextstyle,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           );
-                        }).toList(),
+
+                        },
                       ),
                     ),
                     SizedBox(
